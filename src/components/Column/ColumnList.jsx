@@ -1,5 +1,3 @@
-"use client"
-
 import { useState } from "react"
 import { ViewColumnsIcon, FunnelIcon } from "@heroicons/react/24/outline"
 import { ColumnCard } from "./ColumnCard.jsx"
