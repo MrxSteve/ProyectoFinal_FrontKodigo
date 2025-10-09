@@ -81,15 +81,6 @@ export const ColumnList = ({
           </p>
         </div>
         
-        {onCreateColumn && (
-          <button
-            onClick={onCreateColumn}
-            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            <PlusIcon className="h-5 w-5 mr-2" />
-            Nueva Columna
-          </button>
-        )}
       </div>
 
       {/* Controls */}

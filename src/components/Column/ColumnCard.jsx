@@ -61,18 +61,7 @@ export const ColumnCard = ({
                     Editar columna
                   </button>
                 )}
-                {onAddTask && (
-                  <button
-                    onClick={() => {
-                      setShowMenu(false);
-                      onAddTask(column);
-                    }}
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                  >
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    Agregar tarea
-                  </button>
-                )}
+                
                 {onDelete && (
                   <button
                     onClick={() => {

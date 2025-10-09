@@ -102,48 +102,28 @@ export const BoardDetails = ({
 
   //Modificacion Isma
   const handleCreateColumn = async (e) => {
-    e.preventDefault();
-
-    try {
-      await addColumn({
-        titulo: newColumnData.titulo || "Nueva Columna",
-        color: newColumnData.color,
-        posicion: newColumnData.posicion
+  e.preventDefault();
+  try {
+    const payload = {
+      board_id: board.id, // <-- necesario por el endpoint
+      titulo: (newColumnData.titulo || "Nueva Columna").trim(),
+      color: newColumnData.color,
+      posicion:
+        newColumnData.posicion !== ""
           ? parseInt(newColumnData.posicion, 10)
-          : undefined,
-      });
+          : (columns?.length ?? 0) + 1, // o el default de tu backend
+    };
 
-      setNewColumnData({ titulo: "", color: "#94a3b8", posicion: "" });
-      closeModal();
-      onDataChange?.();
-    } catch (error) {
-      alert(`Error: ${error.message}`);
-    }
-  };
+    await addColumn(payload);
 
+    setNewColumnData({ titulo: "", color: "#94a3b8", posicion: "" });
+    closeModal();
+    onDataChange?.();
+  } catch (error) {
+    alert(`Error: ${error.response?.data?.error || error.message}`);
+  }
+};
 
-  const handleDeleteColumn = async (columnId) => {
-    if (window.confirm("¿Estás seguro de que quieres eliminar esta columna?")) {
-      try {
-        await removeColumn(columnId);
-        onDataChange?.();
-      } catch (error) {
-        alert(`Error: ${error.message}`);
-      }
-    }
-  };
-
-  const handleEditColumn = async (column) => {
-    const newTitle = prompt("Nuevo nombre para la columna:", column.titulo); // en tu ERD el campo es 'titulo'
-    if (newTitle && newTitle.trim() !== column.titulo) {
-      try {
-        await editColumn(column.id, { titulo: newTitle });
-        onDataChange?.();
-      } catch (error) {
-        alert(`Error: ${error.message}`);
-      }
-    }
-  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -261,37 +241,18 @@ export const BoardDetails = ({
 
                     <div className="grid gap-4">
                       {columns?.filter(Boolean).map((column) => (
-                        <div key={column.id || Math.random()} className="bg-white border rounded-lg p-4 group">
-                          <div className="flex items-center justify-between mb-2">
-                            {/* Protegemos column.titulo */}
+                        <div key={column.id || Math.random()} className="bg-white border rounded-lg p-4">
+                          <div className="mb-2">
                             <h4 className="font-medium text-gray-900">{column?.titulo || 'Sin título'}</h4>
-                            <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button
-                                onClick={() => handleEditColumn(column)}
-                                title="Editar"
-                                className="p-1 text-gray-500 hover:text-blue-600"
-                              >
-                                <PencilIcon className="h-4 w-4" />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteColumn(column.id)}
-                                title="Eliminar"
-                                className="p-1 text-gray-500 hover:text-red-600"
-                              >
-                                <TrashIcon className="h-4 w-4" />
-                              </button>
-                            </div>
                           </div>
                           <span className="text-sm text-gray-500">
                             {column.tasks?.length || 0} tareas
                           </span>
                         </div>
-                      ))}
-                      {(!columns || columns.length === 0) && (
-                        <p className="text-gray-500 text-center py-4">No hay columnas definidas</p>
-                      )}
-                    </div>
 
+                      ))}
+                    </div>
+                      {/**Parte de isma */}
                     {/* Modal para nueva columna */}
                     {isModalOpen && (
                       <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">

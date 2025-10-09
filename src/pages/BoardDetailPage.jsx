@@ -12,7 +12,7 @@ import { useBoards } from '../hooks/useBoards.js';
 import { useColumns } from '../hooks/useColumns.js';
 import { 
   ColumnList, 
-  CreateColumnForm, 
+ // CreateColumnForm, 
   EditColumnForm 
 } from '../components/Column/index.js';
 
@@ -112,10 +112,12 @@ export const BoardDetailPage = () => {
   };
 
   // Handle delete column
-  const handleDeleteColumn = async (columnId) => {
+  const handleDeleteColumn = async (column) => {
     setActionLoading(true);
+     //console.log('Intentando eliminar columna con:', column);
+      const id = typeof column === 'object' ? column.id : column;
     try {
-      await removeColumn(columnId);
+      await removeColumn(id);
       setShowEditColumn(false);
       setSelectedColumn(null);
       toast.success('Columna eliminada exitosamente');
@@ -249,18 +251,7 @@ export const BoardDetailPage = () => {
           />
         </div>
 
-        {/* Create Column Modal */}
-        {showCreateColumn && (
-          <CreateColumnForm
-            isOpen={showCreateColumn}
-            onClose={() => setShowCreateColumn(false)}
-            onSubmit={handleCreateSubmit}
-            loading={actionLoading}
-            boardId={parseInt(boardId)}
-            existingColumns={columns}
-          />
-        )}
-
+       
         {/* Edit Column Modal */}
         {showEditColumn && selectedColumn && (
           <EditColumnForm

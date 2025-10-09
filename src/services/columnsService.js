@@ -2,70 +2,51 @@ import { apiClient } from './apiClient.js';
 
 export class ColumnService {
   constructor() {
-    this.endpoint = '/columns';
+    this.endpoint = '/columns'; 
+  }
+
+  normalize(data) {
+    const posRaw = data.posicion ?? data.position ?? '';
+    return {
+      board_id: Number(data.board_id ?? data.boardId),
+      titulo: String(data.titulo ?? '').trim(),
+      color: String(data.color ?? '#94a3b8'),
+      ...(posRaw !== '' ? { posicion: parseInt(posRaw, 10) } : {}), 
+    };
   }
 
   async getAllColumns() {
-    try {
-      return await apiClient.get(this.endpoint);
-    } catch (error) {
-      console.error('Error fetching columns: ', error);
-      throw error;
-    }
+    return await apiClient.get(this.endpoint); 
   }
 
   async getColumnsByBoard(boardId) {
-    try {
-      // Filtrar columnas por board_id ya que no hay endpoint específico
-      const allColumns = await apiClient.get(this.endpoint);
-      return allColumns.filter(column => column.board_id === parseInt(boardId));
-    } catch (error) {
-      console.error(`Error fetching columns for board ${boardId}: `, error);
-      throw error;
-    }
+    const all = await apiClient.get(this.endpoint);
+    return all.filter(c => c.board_id === Number(boardId));
   }
 
   async getColumnById(id) {
-    try {
-      return await apiClient.get(`${this.endpoint}/${id}`);
-    } catch (error) {
-      console.error(`Error fetching column ${id}:`, error);
-      throw error;
-    }
+    return await apiClient.get(`${this.endpoint}/${id}`);
   }
 
   async createColumn(columnData) {
-    try {
-      if (!columnData.titulo || columnData.titulo.trim().length === 0) {
-        throw new Error('El título de la columna es requerido');
-      }
+    const payload = this.normalize(columnData);
+    if (!payload.titulo) throw new Error('El título de la columna es requerido');
+    if (!payload.board_id) throw new Error('El board_id es requerido');
 
-      return await apiClient.post(this.endpoint, columnData);
-    } catch (error) {
-      console.error('Error creating column:', error);
-      throw error;
-    }
+
+    const res = await apiClient.post(this.endpoint, payload); 
+    return res;
   }
 
   async updateColumn(id, columnData) {
-    try {
-      if (columnData.titulo && columnData.titulo.trim().length === 0) {
-        throw new Error('El titulo no puede estar vacío');
-      }
-      return await apiClient.put(`${this.endpoint}/${id}`, columnData);
-    } catch (error) {
-      console.error(`Error updating column ${id}: `, error);
-      throw error;
+    if (columnData.titulo && columnData.titulo.trim().length === 0) {
+      throw new Error('El titulo no puede estar vacío');
     }
+    return await apiClient.patch(`${this.endpoint}/${id}`, columnData);
   }
 
   async deleteColumn(id) {
-    try {
-      await apiClient.delete(`${this.endpoint}/${id}`);
-    } catch (error) {
-      console.error(`Error deleting column ${id}:`, error);
-      throw error;
-    }
+    return await apiClient.delete(`${this.endpoint}/${id}`);
   }
 }
 
