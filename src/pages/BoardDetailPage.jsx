@@ -29,7 +29,6 @@ export const BoardDetailPage = () => {
   const [board, setBoard] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  // const [showCreateColumn, setShowCreateColumn] = useState(false)
   const [showEditColumn, setShowEditColumn] = useState(false)
   const [selectedColumn, setSelectedColumn] = useState(null)
   const [showCreateTask, setShowCreateTask] = useState(false)
@@ -65,20 +64,16 @@ export const BoardDetailPage = () => {
     loadBoardData()
   }, [boardId, fetchBoard, fetchColumnsByBoard, navigate])
 
-  // const handleCreateColumn = () => {
-  //   setSelectedColumn(null)
-  //   setShowCreateColumn(true)
-  // }
-
   const handleCreateSubmit = async (columnData) => {
+    console.log("[v0] Creating column with data:", columnData)
     setActionLoading(true)
     try {
-      await addColumn(columnData)
-      // setShowCreateColumn(false)
+      const result = await addColumn(columnData)
+      console.log("[v0] Column created successfully:", result)
       toast.success("Columna creada exitosamente")
     } catch (error) {
-      console.error("Error creating column:", error)
-      toast.error("Error al crear la columna")
+      console.error("[v0] Error creating column:", error)
+      toast.error(error.message || "Error al crear la columna")
     } finally {
       setActionLoading(false)
     }
@@ -284,7 +279,7 @@ export const BoardDetailPage = () => {
           <ColumnList
             columns={columns}
             loading={columnsLoading}
-            // onCreateColumn={handleCreateColumn}
+            onCreateColumn={handleCreateSubmit}
             onEditColumn={handleEditColumn}
             onDeleteColumn={handleDeleteColumn}
             onAddTask={handleAddTask}
@@ -293,17 +288,6 @@ export const BoardDetailPage = () => {
             boardId={Number.parseInt(boardId)}
           />
         </div>
-
-        {/* {showCreateColumn && (
-          <CreateColumnForm
-            isOpen={showCreateColumn}
-            onClose={() => setShowCreateColumn(false)}
-            onSubmit={handleCreateSubmit}
-            loading={actionLoading}
-            boardId={Number.parseInt(boardId)}
-            existingColumns={columns}
-          />
-        )} */}
 
         {showEditColumn && selectedColumn && (
           <EditColumnForm

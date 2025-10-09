@@ -1,5 +1,7 @@
+"use client"
+
 import { useState } from "react"
-import { ViewColumnsIcon, FunnelIcon } from "@heroicons/react/24/outline"
+import { ViewColumnsIcon, FunnelIcon, PlusIcon } from "@heroicons/react/24/outline"
 import { ColumnCard } from "./ColumnCard.jsx"
 
 export const ColumnList = ({
@@ -16,6 +18,41 @@ export const ColumnList = ({
 }) => {
   const [sortBy, setSortBy] = useState("posicion")
   const [filterBy, setFilterBy] = useState("all")
+
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [newColumnData, setNewColumnData] = useState({
+    titulo: "",
+    color: "#94a3b8",
+    posicion: "",
+  })
+
+  const openModal = () => setIsModalOpen(true)
+  const closeModal = () => {
+    setIsModalOpen(false)
+    setNewColumnData({ titulo: "", color: "#94a3b8", posicion: "" })
+  }
+
+  const handleCreateColumn = async (e) => {
+    e.preventDefault()
+
+    if (!newColumnData.titulo.trim()) {
+      alert("El título es requerido")
+      return
+    }
+
+    try {
+      await onCreateColumn({
+        titulo: newColumnData.titulo.trim(),
+        color: newColumnData.color,
+        posicion: newColumnData.posicion ? Number.parseInt(newColumnData.posicion, 10) : undefined,
+        board_id: boardId,
+      })
+
+      closeModal()
+    } catch (error) {
+      alert(`Error: ${error.message}`)
+    }
+  }
 
   // Sort columns
   const sortedColumns = [...columns].sort((a, b) => {
@@ -80,6 +117,16 @@ export const ColumnList = ({
             {columns.length} columnas • {totalTasks} tareas • {totalCompleted} completadas
           </p>
         </div>
+
+        {onCreateColumn && (
+          <button
+            onClick={openModal}
+            className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 flex items-center transition-colors"
+          >
+            <PlusIcon className="h-5 w-5 mr-1" />
+            Añadir Columna
+          </button>
+        )}
       </div>
 
       {/* Controls */}
@@ -163,6 +210,62 @@ export const ColumnList = ({
               <div className="text-2xl font-bold text-orange-600">{totalTasks - totalCompleted}</div>
               <div className="text-sm text-gray-500">Pendientes</div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+            <h3 className="text-lg font-semibold mb-4">Nueva Columna</h3>
+
+            <form onSubmit={handleCreateColumn} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
+                <input
+                  type="text"
+                  value={newColumnData.titulo}
+                  onChange={(e) => setNewColumnData({ ...newColumnData, titulo: e.target.value })}
+                  required
+                  className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-200"
+                  placeholder="Ej: Pendientes"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                <input
+                  type="color"
+                  value={newColumnData.color}
+                  onChange={(e) => setNewColumnData({ ...newColumnData, color: e.target.value })}
+                  className="w-12 h-8 border rounded"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Posición</label>
+                <input
+                  type="number"
+                  value={newColumnData.posicion}
+                  onChange={(e) => setNewColumnData({ ...newColumnData, posicion: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-200"
+                  placeholder="Opcional"
+                />
+              </div>
+
+              <div className="flex justify-end space-x-2 mt-4">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
+                >
+                  Cancelar
+                </button>
+                <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                  Guardar
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
