@@ -1,5 +1,5 @@
-export { BoardCard } from './BoardCard.jsx';
-export { BoardList } from './BoardList.jsx';
-export { BoardDetails } from './BoardDetails.jsx';
-export { CreateBoardForm } from './CreateBoardForm.jsx';
-export { UpdateBoardForm } from './UpdateBoardForm.jsx';
+export { BoardCard } from "./BoardCard.jsx"
+export { BoardList } from "./BoardList.jsx"
+export { BoardDetails } from "./BoardDetails.jsx"
+export { CreateBoardForm } from "./CreateBoardForm.jsx"
+export { UpdateBoardForm } from "./UpdateBoardForm.jsx"

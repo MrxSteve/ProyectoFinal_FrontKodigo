@@ -1,10 +1,8 @@
-import { useState } from 'react';
-import { 
-  PlusIcon,
-  ViewColumnsIcon,
-  FunnelIcon,
-} from '@heroicons/react/24/outline';
-import { ColumnCard } from './ColumnCard.jsx';
+"use client"
+
+import { useState } from "react"
+import { ViewColumnsIcon, FunnelIcon } from "@heroicons/react/24/outline"
+import { ColumnCard } from "./ColumnCard.jsx"
 
 export const ColumnList = ({
   columns = [],
@@ -13,37 +11,41 @@ export const ColumnList = ({
   onEditColumn,
   onDeleteColumn,
   onAddTask,
+  onEditTask,
+  onDeleteTask,
   boardId,
-  className = '',
+  className = "",
 }) => {
-  const [sortBy, setSortBy] = useState('posicion');
-  const [filterBy, setFilterBy] = useState('all');
+  const [sortBy, setSortBy] = useState("posicion")
+  const [filterBy, setFilterBy] = useState("all")
 
   // Sort columns
   const sortedColumns = [...columns].sort((a, b) => {
     switch (sortBy) {
-      case 'posicion':
-        return (a.posicion || 0) - (b.posicion || 0);
-      case 'titulo':
-        return (a.titulo || a.nombre || '').localeCompare(b.titulo || b.nombre || '');
-      case 'tasks':
-        return (b.tasks?.length || 0) - (a.tasks?.length || 0);
+      case "posicion":
+        return (a.posicion || 0) - (b.posicion || 0)
+      case "titulo":
+        return (a.titulo || a.nombre || "").localeCompare(b.titulo || b.nombre || "")
+      case "tasks":
+        return (b.tasks?.length || 0) - (a.tasks?.length || 0)
       default:
-        return 0;
+        return 0
     }
-  });
+  })
 
   // Filter columns
-  const filteredColumns = sortedColumns.filter(column => {
-    if (filterBy === 'all') return true;
-    if (filterBy === 'empty') return !column.tasks || column.tasks.length === 0;
-    if (filterBy === 'active') return column.tasks && column.tasks.length > 0;
-    return true;
-  });
+  const filteredColumns = sortedColumns.filter((column) => {
+    if (filterBy === "all") return true
+    if (filterBy === "empty") return !column.tasks || column.tasks.length === 0
+    if (filterBy === "active") return column.tasks && column.tasks.length > 0
+    return true
+  })
 
-  const totalTasks = columns.reduce((acc, col) => acc + (col.tasks?.length || 0), 0);
-  const totalCompleted = columns.reduce((acc, col) => 
-    acc + (col.tasks?.filter(task => task.avance === 100).length || 0), 0);
+  const totalTasks = columns.reduce((acc, col) => acc + (col.tasks?.length || 0), 0)
+  const totalCompleted = columns.reduce(
+    (acc, col) => acc + (col.tasks?.filter((task) => task.avance === 100).length || 0),
+    0,
+  )
 
   if (loading) {
     return (
@@ -64,7 +66,7 @@ export const ColumnList = ({
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -80,7 +82,6 @@ export const ColumnList = ({
             {columns.length} columnas • {totalTasks} tareas • {totalCompleted} completadas
           </p>
         </div>
-        
       </div>
 
       {/* Controls */}
@@ -98,7 +99,7 @@ export const ColumnList = ({
               <option value="tasks">Por número de tareas</option>
             </select>
           </div>
-          
+
           <div className="flex items-center">
             <span className="text-sm text-gray-500 mr-2">Filtrar:</span>
             <select
@@ -119,23 +120,13 @@ export const ColumnList = ({
         <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
           <ViewColumnsIcon className="mx-auto h-16 w-16 text-gray-300" />
           <h3 className="mt-4 text-lg font-medium text-gray-900">
-            {columns.length === 0 ? 'No hay columnas' : 'No hay columnas que coincidan con el filtro'}
+            {columns.length === 0 ? "No hay columnas" : "No hay columnas que coincidan con el filtro"}
           </h3>
           <p className="mt-2 text-gray-500">
-            {columns.length === 0 
-              ? 'Comienza creando la primera columna para organizar tus tareas'
-              : 'Intenta cambiar los filtros para ver más columnas'
-            }
+            {columns.length === 0
+              ? "Comienza creando la primera columna para organizar tus tareas"
+              : "Intenta cambiar los filtros para ver más columnas"}
           </p>
-          {columns.length === 0 && onCreateColumn && (
-            <button
-              onClick={onCreateColumn}
-              className="mt-4 inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
-            >
-              <PlusIcon className="h-5 w-5 mr-2" />
-              Crear Primera Columna
-            </button>
-          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -146,11 +137,13 @@ export const ColumnList = ({
               onEdit={onEditColumn}
               onDelete={onDeleteColumn}
               onAddTask={onAddTask}
+              onEditTask={onEditTask}
+              onDeleteTask={onDeleteTask}
             />
           ))}
         </div>
       )}
-      
+
       {/* Summary Stats */}
       {columns.length > 0 && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -176,5 +169,5 @@ export const ColumnList = ({
         </div>
       )}
     </div>
-  );
-};
+  )
+}

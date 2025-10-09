@@ -1,44 +1,35 @@
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { useNavigate } from 'react-router-dom';
-import { 
-  FolderIcon, 
-  EyeIcon, 
-  PencilIcon, 
+import { format } from "date-fns"
+import { es } from "date-fns/locale"
+import { useNavigate } from "react-router-dom"
+import {
+  FolderIcon,
+  EyeIcon,
+  PencilIcon,
   TrashIcon,
   CalendarIcon,
   ChartBarIcon,
-  ArrowRightIcon
-} from '@heroicons/react/24/outline';
+  ArrowRightIcon,
+} from "@heroicons/react/24/outline"
 
-export const BoardCard = ({
-  board,
-  onView,
-  onEdit,
-  onDelete,
-  loading = false,
-  className = '',
-}) => {
-  const navigate = useNavigate();
+export const BoardCard = ({ board, onView, onEdit, onDelete, loading = false, className = "" }) => {
+  const navigate = useNavigate()
   // Calculate board statistics
-  const totalColumns = board.columns?.length || 0;
-  const totalTasks = board.columns?.reduce((acc, col) => acc + (col.tasks?.length || 0), 0) || 0;
-  const completedTasks = board.columns?.reduce(
-    (acc, col) => acc + (col.tasks?.filter(task => task.avance === 100).length || 0), 
-    0
-  ) || 0;
-  const completionPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+  const totalColumns = board.columns?.length || 0
+  const totalTasks = board.columns?.reduce((acc, col) => acc + (col.tasks?.length || 0), 0) || 0
+  const completedTasks =
+    board.columns?.reduce((acc, col) => acc + (col.tasks?.filter((task) => task.avance === 100).length || 0), 0) || 0
+  const completionPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
 
   // Format dates
-  const createdDate = format(new Date(board.created_at), 'dd MMM yyyy', { locale: es });
-  const updatedDate = format(new Date(board.updated_at), 'dd MMM yyyy', { locale: es });
+  const createdDate = format(new Date(board.created_at), "dd MMM yyyy", { locale: es })
+  const updatedDate = format(new Date(board.updated_at), "dd MMM yyyy", { locale: es })
 
   return (
-    <div 
+    <div
       className={`
         group relative bg-white rounded-xl shadow-sm border border-gray-200 
         hover:shadow-lg hover:border-gray-300 transition-all duration-300
-        ${loading ? 'opacity-50 pointer-events-none' : ''}
+        ${loading ? "opacity-50 pointer-events-none" : ""}
         ${className}
       `}
     >
@@ -50,17 +41,11 @@ export const BoardCard = ({
               <FolderIcon className="h-8 w-8 text-blue-500" />
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 truncate">
-                {board.nombre}
-              </h3>
-              {board.descripcion && (
-                <p className="text-sm text-gray-500 mt-1 line-clamp-2">
-                  {board.descripcion}
-                </p>
-              )}
+              <h3 className="text-lg font-semibold text-gray-900 truncate">{board.nombre}</h3>
+              {board.descripcion && <p className="text-sm text-gray-500 mt-1 line-clamp-2">{board.descripcion}</p>}
             </div>
           </div>
-          
+
           {/* Actions dropdown */}
           <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <div className="flex space-x-1">
@@ -118,7 +103,7 @@ export const BoardCard = ({
               <span className="font-medium">{completionPercentage}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
+              <div
                 className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${completionPercentage}%` }}
               />
@@ -147,7 +132,7 @@ export const BoardCard = ({
             </span>
           )}
         </div>
-        
+
         {/* Open Board Button */}
         <button
           onClick={() => navigate(`/boards/${board.id}`)}
@@ -166,5 +151,5 @@ export const BoardCard = ({
         </div>
       )}
     </div>
-  );
-};
+  )
+}

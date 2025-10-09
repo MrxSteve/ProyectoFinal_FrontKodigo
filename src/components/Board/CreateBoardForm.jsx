@@ -1,13 +1,7 @@
-import { useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { useForm, Controller } from "react-hook-form"
+import { XMarkIcon } from "@heroicons/react/24/outline"
 
-export const CreateBoardForm = ({
-  onSubmit,
-  onCancel,
-  loading = false,
-  className = '',
-}) => {
+export const CreateBoardForm = ({ onSubmit, onCancel, loading = false, className = "" }) => {
   const {
     control,
     handleSubmit,
@@ -16,43 +10,41 @@ export const CreateBoardForm = ({
     watch,
   } = useForm({
     defaultValues: {
-      nombre: '',
-      descripcion: '',
+      nombre: "",
+      descripcion: "",
     },
-    mode: 'onChange',
-  });
+    mode: "onChange",
+  })
 
-  const watchedValues = watch();
+  const watchedValues = watch()
 
   const handleFormSubmit = async (data) => {
     try {
       const formData = {
         nombre: data.nombre,
         descripcion: data.descripcion || undefined,
-      };
-      
-      await onSubmit(formData);
-      reset();
+      }
+
+      await onSubmit(formData)
+      reset()
     } catch (error) {
-      console.error('Error submitting form:', error);
+      console.error("Error submitting form:", error)
     }
-  };
+  }
 
   const handleCancel = () => {
-    reset();
-    onCancel();
-  };
+    reset()
+    onCancel()
+  }
 
   // Simple validation
-  const isNombreValid = watchedValues.nombre && watchedValues.nombre.trim().length >= 3;
+  const isNombreValid = watchedValues.nombre && watchedValues.nombre.trim().length >= 3
 
   return (
     <div className={`bg-white rounded-lg shadow-lg ${className}`}>
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-gray-200">
-        <h2 className="text-xl font-semibold text-gray-900">
-          Crear Nuevo Tablero
-        </h2>
+        <h2 className="text-xl font-semibold text-gray-900">Crear Nuevo Tablero</h2>
         <button
           onClick={handleCancel}
           className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
@@ -72,9 +64,9 @@ export const CreateBoardForm = ({
             name="nombre"
             control={control}
             rules={{
-              required: 'El nombre es requerido',
-              minLength: { value: 3, message: 'Mínimo 3 caracteres' },
-              maxLength: { value: 100, message: 'Máximo 100 caracteres' }
+              required: "El nombre es requerido",
+              minLength: { value: 3, message: "Mínimo 3 caracteres" },
+              maxLength: { value: 100, message: "Máximo 100 caracteres" },
             }}
             render={({ field }) => (
               <input
@@ -84,22 +76,15 @@ export const CreateBoardForm = ({
                 className={`
                   w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent
                   transition-colors
-                  ${errors.nombre 
-                    ? 'border-red-300 focus:ring-red-500' 
-                    : 'border-gray-300 hover:border-gray-400'
-                  }
+                  ${errors.nombre ? "border-red-300 focus:ring-red-500" : "border-gray-300 hover:border-gray-400"}
                 `}
                 placeholder="Ej: Proyecto Frontend, Desarrollo Web, etc."
                 disabled={loading}
               />
             )}
           />
-          {errors.nombre && (
-            <p className="mt-1 text-sm text-red-600">{errors.nombre.message}</p>
-          )}
-          <p className="mt-1 text-xs text-gray-500">
-            {watchedValues.nombre?.length || 0}/100 caracteres
-          </p>
+          {errors.nombre && <p className="mt-1 text-sm text-red-600">{errors.nombre.message}</p>}
+          <p className="mt-1 text-xs text-gray-500">{watchedValues.nombre?.length || 0}/100 caracteres</p>
         </div>
 
         {/* Descripción field */}
@@ -111,7 +96,7 @@ export const CreateBoardForm = ({
             name="descripcion"
             control={control}
             rules={{
-              maxLength: { value: 500, message: 'Máximo 500 caracteres' }
+              maxLength: { value: 500, message: "Máximo 500 caracteres" },
             }}
             render={({ field }) => (
               <textarea
@@ -121,22 +106,15 @@ export const CreateBoardForm = ({
                 className={`
                   w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent
                   transition-colors resize-none
-                  ${errors.descripcion 
-                    ? 'border-red-300 focus:ring-red-500' 
-                    : 'border-gray-300 hover:border-gray-400'
-                  }
+                  ${errors.descripcion ? "border-red-300 focus:ring-red-500" : "border-gray-300 hover:border-gray-400"}
                 `}
                 placeholder="Describe el propósito y objetivos de este tablero..."
                 disabled={loading}
               />
             )}
           />
-          {errors.descripcion && (
-            <p className="mt-1 text-sm text-red-600">{errors.descripcion.message}</p>
-          )}
-          <p className="mt-1 text-xs text-gray-500">
-            {watchedValues.descripcion?.length || 0}/500 caracteres
-          </p>
+          {errors.descripcion && <p className="mt-1 text-sm text-red-600">{errors.descripcion.message}</p>}
+          <p className="mt-1 text-xs text-gray-500">{watchedValues.descripcion?.length || 0}/500 caracteres</p>
         </div>
 
         {/* Actions */}
@@ -155,10 +133,7 @@ export const CreateBoardForm = ({
             className={`
               px-6 py-2 text-sm font-medium text-white rounded-lg transition-colors
               focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
-              ${loading || !isNombreValid
-                ? 'bg-gray-400 cursor-not-allowed' 
-                : 'bg-blue-600 hover:bg-blue-700'
-              }
+              ${loading || !isNombreValid ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}
             `}
           >
             {loading ? (
@@ -173,5 +148,5 @@ export const CreateBoardForm = ({
         </div>
       </form>
     </div>
-  );
-};
+  )
+}

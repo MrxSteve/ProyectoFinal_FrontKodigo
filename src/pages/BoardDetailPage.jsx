@@ -1,25 +1,18 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
-import { 
-  ArrowLeftIcon,
-  PencilIcon,
-  TrashIcon,
-  Cog6ToothIcon
-} from '@heroicons/react/24/outline';
+import { useState, useEffect } from "react"
+import { useParams, useNavigate } from "react-router-dom"
+import toast from "react-hot-toast"
+import { ArrowLeftIcon, PencilIcon, TrashIcon, Cog6ToothIcon } from "@heroicons/react/24/outline"
 
-import { useBoards } from '../hooks/useBoards.js';
-import { useColumns } from '../hooks/useColumns.js';
-import { 
-  ColumnList, 
- // CreateColumnForm, 
-  EditColumnForm 
-} from '../components/Column/index.js';
+import { useBoards } from "../hooks/useBoards.js"
+import { useColumns } from "../hooks/useColumns.js"
+import { useTasks } from "../hooks/useTasks.js"
+import { ColumnList, EditColumnForm } from "../components/Column/index.js"
+import { CreateTaskForm, EditTaskForm } from "../components/Task/index.js"
 
 export const BoardDetailPage = () => {
-  const { boardId } = useParams();
-  const navigate = useNavigate();
-  const { fetchBoard } = useBoards();
+  const { boardId } = useParams()
+  const navigate = useNavigate()
+  const { fetchBoard } = useBoards()
   const {
     columns,
     loading: columnsLoading,
@@ -28,111 +21,168 @@ export const BoardDetailPage = () => {
     addColumn,
     editColumn,
     removeColumn,
-    clearError: clearColumnsError
-  } = useColumns();
+    clearError: clearColumnsError,
+  } = useColumns()
 
-  // Local state
-  const [board, setBoard] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [showCreateColumn, setShowCreateColumn] = useState(false);
-  const [showEditColumn, setShowEditColumn] = useState(false);
-  const [selectedColumn, setSelectedColumn] = useState(null);
-  const [actionLoading, setActionLoading] = useState(false);
+  const { createTask, updateTask, deleteTask } = useTasks()
 
-  // Load board data
+  const [board, setBoard] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  // const [showCreateColumn, setShowCreateColumn] = useState(false)
+  const [showEditColumn, setShowEditColumn] = useState(false)
+  const [selectedColumn, setSelectedColumn] = useState(null)
+  const [showCreateTask, setShowCreateTask] = useState(false)
+  const [showEditTask, setShowEditTask] = useState(false)
+  const [selectedTask, setSelectedTask] = useState(null)
+  const [selectedColumnForTask, setSelectedColumnForTask] = useState(null)
+  const [actionLoading, setActionLoading] = useState(false)
+
   useEffect(() => {
     const loadBoardData = async () => {
       if (!boardId) {
-        navigate('/boards');
-        return;
+        navigate("/boards")
+        return
       }
 
       try {
-        setLoading(true);
-        setError(null);
+        setLoading(true)
+        setError(null)
 
-        // Fetch board details
-        const boardData = await fetchBoard(parseInt(boardId));
-        setBoard(boardData);
+        const boardData = await fetchBoard(Number.parseInt(boardId))
+        setBoard(boardData)
 
-        // Fetch columns for this board
-        await fetchColumnsByBoard(parseInt(boardId));
+        await fetchColumnsByBoard(Number.parseInt(boardId))
       } catch (err) {
-        console.error('Error loading board:', err);
-        setError('Error al cargar el tablero');
-        toast.error('Error al cargar el tablero');
+        console.error("Error loading board:", err)
+        setError("Error al cargar el tablero")
+        toast.error("Error al cargar el tablero")
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    loadBoardData();
-  }, [boardId, fetchBoard, fetchColumnsByBoard, navigate]);
+    loadBoardData()
+  }, [boardId, fetchBoard, fetchColumnsByBoard, navigate])
 
-  // Handle create column
-  const handleCreateColumn = () => {
-    setSelectedColumn(null);
-    setShowCreateColumn(true);
-  };
+  // const handleCreateColumn = () => {
+  //   setSelectedColumn(null)
+  //   setShowCreateColumn(true)
+  // }
 
   const handleCreateSubmit = async (columnData) => {
-    setActionLoading(true);
+    setActionLoading(true)
     try {
-      await addColumn(columnData);
-      setShowCreateColumn(false);
-      toast.success('Columna creada exitosamente');
+      await addColumn(columnData)
+      // setShowCreateColumn(false)
+      toast.success("Columna creada exitosamente")
     } catch (error) {
-      console.error('Error creating column:', error);
-      toast.error('Error al crear la columna');
+      console.error("Error creating column:", error)
+      toast.error("Error al crear la columna")
     } finally {
-      setActionLoading(false);
+      setActionLoading(false)
     }
-  };
+  }
 
-  // Handle edit column
   const handleEditColumn = (column) => {
-    setSelectedColumn(column);
-    setShowEditColumn(true);
-  };
+    setSelectedColumn(column)
+    setShowEditColumn(true)
+  }
 
   const handleEditSubmit = async (columnId, columnData) => {
-    setActionLoading(true);
+    setActionLoading(true)
     try {
-      await editColumn(columnId, columnData);
-      setShowEditColumn(false);
-      setSelectedColumn(null);
-      toast.success('Columna actualizada exitosamente');
+      await editColumn(columnId, columnData)
+      setShowEditColumn(false)
+      setSelectedColumn(null)
+      toast.success("Columna actualizada exitosamente")
     } catch (error) {
-      console.error('Error updating column:', error);
-      toast.error('Error al actualizar la columna');
+      console.error("Error updating column:", error)
+      toast.error("Error al actualizar la columna")
     } finally {
-      setActionLoading(false);
+      setActionLoading(false)
     }
-  };
+  }
 
-  // Handle delete column
-  const handleDeleteColumn = async (column) => {
-    setActionLoading(true);
-     //console.log('Intentando eliminar columna con:', column);
-      const id = typeof column === 'object' ? column.id : column;
+  const handleDeleteColumn = async (columnId) => {
+    const id = typeof columnId === "object" ? columnId.id : columnId
+    setActionLoading(true)
     try {
-      await removeColumn(id);
-      setShowEditColumn(false);
-      setSelectedColumn(null);
-      toast.success('Columna eliminada exitosamente');
+      await removeColumn(id)
+      setShowEditColumn(false)
+      setSelectedColumn(null)
+      toast.success("Columna eliminada exitosamente")
     } catch (error) {
-      console.error('Error deleting column:', error);
-      toast.error('Error al eliminar la columna');
+      console.error("Error deleting column:", error)
+      toast.error("Error al eliminar la columna")
     } finally {
-      setActionLoading(false);
+      setActionLoading(false)
     }
-  };
+  }
 
-  // Handle add task (placeholder for now)
-  const handleAddTask = (columnId) => {
-    toast.info('Funcionalidad de tareas próximamente');
-  };
+  const handleAddTask = (column) => {
+    console.log("[v0] Opening create task modal for column:", column)
+    setSelectedColumnForTask(column)
+    setShowCreateTask(true)
+  }
+
+  const handleCreateTask = async (taskData) => {
+    setActionLoading(true)
+    try {
+      await createTask(taskData)
+      setShowCreateTask(false)
+      setSelectedColumnForTask(null)
+      await fetchColumnsByBoard(Number.parseInt(boardId))
+      toast.success("Tarea creada exitosamente")
+    } catch (error) {
+      console.error("Error creating task:", error)
+      toast.error("Error al crear la tarea")
+      throw error
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleEditTask = (task) => {
+    setSelectedTask(task)
+    setShowEditTask(true)
+  }
+
+  const handleEditTaskSubmit = async (taskId, taskData) => {
+    console.log("[v0] handleEditTaskSubmit called with:", { taskId, taskData })
+    setActionLoading(true)
+    try {
+      console.log("[v0] Calling updateTask...")
+      const result = await updateTask(taskId, taskData)
+      console.log("[v0] updateTask result:", result)
+      setShowEditTask(false)
+      setSelectedTask(null)
+      await fetchColumnsByBoard(Number.parseInt(boardId))
+      toast.success("Tarea actualizada exitosamente")
+    } catch (error) {
+      console.error("[v0] Error updating task:", error)
+      toast.error("Error al actualizar la tarea")
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleDeleteTask = async (taskId) => {
+    const id = typeof taskId === "object" ? taskId.id : taskId
+    setActionLoading(true)
+    try {
+      await deleteTask(id)
+      setShowEditTask(false)
+      setSelectedTask(null)
+      await fetchColumnsByBoard(Number.parseInt(boardId))
+      toast.success("Tarea eliminada exitosamente")
+    } catch (error) {
+      console.error("Error deleting task:", error)
+      toast.error("Error al eliminar la tarea")
+    } finally {
+      setActionLoading(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -142,7 +192,7 @@ export const BoardDetailPage = () => {
           <p className="text-gray-600">Cargando tablero...</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (error || !board) {
@@ -151,9 +201,9 @@ export const BoardDetailPage = () => {
         <div className="text-center">
           <div className="text-red-500 text-6xl mb-4">⚠️</div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Error al cargar el tablero</h2>
-          <p className="text-gray-600 mb-4">{error || 'Tablero no encontrado'}</p>
+          <p className="text-gray-600 mb-4">{error || "Tablero no encontrado"}</p>
           <button
-            onClick={() => navigate('/boards')}
+            onClick={() => navigate("/boards")}
             className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
@@ -161,23 +211,22 @@ export const BoardDetailPage = () => {
           </button>
         </div>
       </div>
-    );
+    )
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <button
-              onClick={() => navigate('/boards')}
+              onClick={() => navigate("/boards")}
               className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 transition-colors"
             >
               <ArrowLeftIcon className="h-5 w-5 mr-1" />
               Volver a Tableros
             </button>
-            
+
             <div className="flex items-center space-x-2">
               <button
                 className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
@@ -202,13 +251,10 @@ export const BoardDetailPage = () => {
 
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 text-white">
             <h1 className="text-3xl font-bold mb-2">{board.nombre}</h1>
-            {board.descripcion && (
-              <p className="text-blue-100 text-lg">{board.descripcion}</p>
-            )}
+            {board.descripcion && <p className="text-blue-100 text-lg">{board.descripcion}</p>}
           </div>
         </div>
 
-        {/* Board Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg p-6 text-center shadow-sm border border-gray-200">
             <div className="text-3xl font-bold text-gray-900">{columns.length}</div>
@@ -222,43 +268,49 @@ export const BoardDetailPage = () => {
           </div>
           <div className="bg-white rounded-lg p-6 text-center shadow-sm border border-gray-200">
             <div className="text-3xl font-bold text-green-600">
-              {columns.reduce((acc, col) => 
-                acc + (col.tasks?.filter(task => task.avance === 100).length || 0), 0
-              )}
+              {columns.reduce((acc, col) => acc + (col.tasks?.filter((task) => task.avance === 100).length || 0), 0)}
             </div>
             <div className="text-sm text-gray-500">Completadas</div>
           </div>
           <div className="bg-white rounded-lg p-6 text-center shadow-sm border border-gray-200">
             <div className="text-3xl font-bold text-orange-600">
-              {columns.reduce((acc, col) => 
-                acc + (col.tasks?.filter(task => task.avance < 100).length || 0), 0
-              )}
+              {columns.reduce((acc, col) => acc + (col.tasks?.filter((task) => task.avance < 100).length || 0), 0)}
             </div>
             <div className="text-sm text-gray-500">Pendientes</div>
           </div>
         </div>
 
-        {/* Columns Section */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <ColumnList
             columns={columns}
             loading={columnsLoading}
-            onCreateColumn={handleCreateColumn}
+            // onCreateColumn={handleCreateColumn}
             onEditColumn={handleEditColumn}
             onDeleteColumn={handleDeleteColumn}
             onAddTask={handleAddTask}
-            boardId={parseInt(boardId)}
+            onEditTask={handleEditTask}
+            onDeleteTask={handleDeleteTask}
+            boardId={Number.parseInt(boardId)}
           />
         </div>
 
-       
-        {/* Edit Column Modal */}
+        {/* {showCreateColumn && (
+          <CreateColumnForm
+            isOpen={showCreateColumn}
+            onClose={() => setShowCreateColumn(false)}
+            onSubmit={handleCreateSubmit}
+            loading={actionLoading}
+            boardId={Number.parseInt(boardId)}
+            existingColumns={columns}
+          />
+        )} */}
+
         {showEditColumn && selectedColumn && (
           <EditColumnForm
             isOpen={showEditColumn}
             onClose={() => {
-              setShowEditColumn(false);
-              setSelectedColumn(null);
+              setShowEditColumn(false)
+              setSelectedColumn(null)
             }}
             onSubmit={handleEditSubmit}
             onDelete={handleDeleteColumn}
@@ -267,7 +319,36 @@ export const BoardDetailPage = () => {
             existingColumns={columns}
           />
         )}
+
+        {showCreateTask && selectedColumnForTask && (
+          <CreateTaskForm
+            isOpen={showCreateTask}
+            onClose={() => {
+              setShowCreateTask(false)
+              setSelectedColumnForTask(null)
+            }}
+            onSubmit={handleCreateTask}
+            loading={actionLoading}
+            columnId={selectedColumnForTask.id}
+            existingTasks={selectedColumnForTask.tasks || []}
+          />
+        )}
+
+        {showEditTask && selectedTask && (
+          <EditTaskForm
+            isOpen={showEditTask}
+            onClose={() => {
+              setShowEditTask(false)
+              setSelectedTask(null)
+            }}
+            onSubmit={handleEditTaskSubmit}
+            onDelete={handleDeleteTask}
+            loading={actionLoading}
+            task={selectedTask}
+            existingTasks={columns.find((col) => col.id === selectedTask.column_id)?.tasks || []}
+          />
+        )}
       </div>
     </div>
-  );
-};
+  )
+}
