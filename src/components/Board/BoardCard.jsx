@@ -1,12 +1,14 @@
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useNavigate } from 'react-router-dom';
 import { 
   FolderIcon, 
   EyeIcon, 
   PencilIcon, 
   TrashIcon,
   CalendarIcon,
-  ChartBarIcon 
+  ChartBarIcon,
+  ArrowRightIcon
 } from '@heroicons/react/24/outline';
 
 export const BoardCard = ({
@@ -17,6 +19,7 @@ export const BoardCard = ({
   loading = false,
   className = '',
 }) => {
+  const navigate = useNavigate();
   // Calculate board statistics
   const totalColumns = board.columns?.length || 0;
   const totalTasks = board.columns?.reduce((acc, col) => acc + (col.tasks?.length || 0), 0) || 0;
@@ -130,7 +133,7 @@ export const BoardCard = ({
 
       {/* Footer */}
       <div className="px-6 py-4 bg-gray-50 rounded-b-xl border-t border-gray-100">
-        <div className="flex items-center justify-between text-xs text-gray-500">
+        <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
           <div className="flex items-center space-x-4">
             <span className="flex items-center">
               <CalendarIcon className="h-3 w-3 mr-1" />
@@ -144,6 +147,16 @@ export const BoardCard = ({
             </span>
           )}
         </div>
+        
+        {/* Open Board Button */}
+        <button
+          onClick={() => navigate(`/boards/${board.id}`)}
+          className="w-full flex items-center justify-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors group"
+          disabled={loading}
+        >
+          <span>Abrir Tablero</span>
+          <ArrowRightIcon className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+        </button>
       </div>
 
       {/* Loading overlay */}

@@ -48,10 +48,14 @@ export const BoardsPage = () => {
       const newBoard = await createBoard(data);
       if (newBoard) {
         setShowCreateModal(false);
+        setSelectedBoard(null);
         toast.success('Tablero creado exitosamente');
+      } else {
+        toast.error('Error al crear el tablero');
       }
     } catch (error) {
       console.error('Error creating board:', error);
+      toast.error('Error al crear el tablero');
     } finally {
       setActionLoading(false);
     }
@@ -73,9 +77,12 @@ export const BoardsPage = () => {
         setShowEditModal(false);
         setSelectedBoard(null);
         toast.success('Tablero actualizado exitosamente');
+      } else {
+        toast.error('Error al actualizar el tablero');
       }
     } catch (error) {
       console.error('Error updating board:', error);
+      toast.error('Error al actualizar el tablero');
     } finally {
       setActionLoading(false);
     }

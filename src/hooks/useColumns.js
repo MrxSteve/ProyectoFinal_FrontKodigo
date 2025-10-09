@@ -1,58 +1,105 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
+import { columnsService } from '../services/columnsService.js';
 
-import { columnService } from '../services/columnsService';
+export const useColumns = () => {
+  const [state, setState] = useState({
+    columns: [],
+    loading: false,
+    error: null,
+  });
 
+  // Helper function to update state
+  const updateState = useCallback((updates) => {
+    setState(prev => ({ ...prev, ...updates }));
+  }, []);
 
-export const useColumns = (boardId, initialColumns = []) => {
-    const [columns, setColumns] = useState(initialColumns);
-    const [error, setError] = useState(null);
+  // Fetch columns for a specific board
+  const fetchColumnsByBoard = useCallback(async (boardId) => {
+    try {
+      updateState({ loading: true, error: null });
+      const columns = await columnsService.getColumnsByBoard(boardId);
+      updateState({ columns, loading: false });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al cargar las columnas';
+      updateState({ 
+        columns: [], 
+        loading: false, 
+        error: errorMessage 
+      });
+      throw error;
+    }
+  }, [updateState]);
 
-   const addColumn = async (columnData) => {
-  try {
-    const response = await columnService.createColumns(boardId, columnData, columns);
-    const newColumn = response.data; 
+  // Create new column
+  const addColumn = useCallback(async (columnData) => {
+    try {
+      updateState({ loading: true, error: null });
+      const newColumn = await columnsService.createColumn(columnData);
+      updateState(prev => ({ 
+        columns: [...prev.columns, newColumn], 
+        loading: false 
+      }));
+      return newColumn;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al crear la columna';
+      updateState({ loading: false, error: errorMessage });
+      throw error;
+    }
+  }, [updateState]);
 
-    setColumns((prevColumns) => [...prevColumns, newColumn]);
-    setError(null);
-    return newColumn; 
-  } catch (err) {
-    console.error('Error al crear la columna:', err);
-    setError(err.message);
-    throw err; 
-  }
-};
+  // Update existing column
+  const editColumn = useCallback(async (columnId, columnData) => {
+    try {
+      updateState({ loading: true, error: null });
+      const updatedColumn = await columnsService.updateColumn(columnId, columnData);
+      updateState(prev => ({
+        columns: prev.columns.map(col => 
+          col.id === columnId ? updatedColumn : col
+        ),
+        loading: false
+      }));
+      return updatedColumn;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al actualizar la columna';
+      updateState({ loading: false, error: errorMessage });
+      throw error;
+    }
+  }, [updateState]);
 
+  // Delete column
+  const removeColumn = useCallback(async (columnId) => {
+    try {
+      updateState({ loading: true, error: null });
+      await columnsService.deleteColumn(columnId);
+      updateState(prev => ({
+        columns: prev.columns.filter(col => col.id !== columnId),
+        loading: false
+      }));
+      return true;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al eliminar la columna';
+      updateState({ loading: false, error: errorMessage });
+      throw error;
+    }
+  }, [updateState]);
 
-    const removeColumn = async (columnId) => {
-        try {
-            await columnService.deleteColumn(columnId);
-            setColumns((prevColumns) =>
-                prevColumns.filter((col) => col.id !== columnId)
-            );
-            setError(null);
-        } catch (err) {
-            console.error('Error al eliminar la columna:', err);
-            setError(err.message);
-            throw err;
-        }
-    };
+  // Clear error
+  const clearError = useCallback(() => {
+    updateState({ error: null });
+  }, [updateState]);
 
-    const editColumn = async (columnId, updatedData) => {
-        try {
-            const response = await columnService.updateColumns(columnId, updatedData);
-            const updatedColumn = response.data;
-            setColumns(prevColumns => prevColumns.map(col =>
-                col.id === columnId ? updatedColumn : col
-            ));
-            setError(null);
-            return updatedColumn;
-        } catch (err) {
-            console.error('Error al actualizar la columna:', err);
-            setError(err.message);
-            throw err;
-        }
-    };
-
-    return { columns, setColumns, error, addColumn, removeColumn, editColumn };
+  return {
+    // State
+    columns: state.columns,
+    loading: state.loading,
+    error: state.error,
+    
+    // Actions
+    fetchColumnsByBoard,
+    addColumn,
+    editColumn,
+    removeColumn,
+    clearError,
+  };
 };

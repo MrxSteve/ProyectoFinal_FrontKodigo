@@ -52,10 +52,11 @@ export const useBoards = () => {
       updateState({ loading: true, error: null });
       const newBoard = await boardService.createBoard(boardData);
       
-      // Add to existing boards list
+      // Add to existing boards list and stop loading
       updateState(prev => ({
         boards: [...prev.boards, newBoard],
         loading: false,
+        error: null
       }));
       
       return newBoard;
@@ -153,6 +154,16 @@ export const useBoards = () => {
     updateState({ selectedBoard: null });
   }, [updateState]);
 
+  // Fetch single board (returns the board directly)
+  const fetchBoard = useCallback(async (id) => {
+    try {
+      const board = await boardService.getBoardById(id);
+      return board;
+    } catch (error) {
+      throw error;
+    }
+  }, []);
+
   // Load boards on mount
   useEffect(() => {
     fetchBoards();
@@ -168,6 +179,7 @@ export const useBoards = () => {
     // Actions
     fetchBoards,
     fetchBoardById,
+    fetchBoard,
     createBoard,
     updateBoard,
     deleteBoard,

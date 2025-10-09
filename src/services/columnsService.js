@@ -16,7 +16,9 @@ export class ColumnService {
 
   async getColumnsByBoard(boardId) {
     try {
-      return await apiClient.get(`/boards/${boardId}/columns`);
+      // Filtrar columnas por board_id ya que no hay endpoint específico
+      const allColumns = await apiClient.get(this.endpoint);
+      return allColumns.filter(column => column.board_id === parseInt(boardId));
     } catch (error) {
       console.error(`Error fetching columns for board ${boardId}: `, error);
       throw error;
@@ -32,31 +34,20 @@ export class ColumnService {
     }
   }
 
-  async createColumns(boardId, columnsData, currentColumns = []){
+  async createColumn(columnData) {
     try {
-      if (!columnsData.titulo || columnsData.titulo.trim().length === 0) {
+      if (!columnData.titulo || columnData.titulo.trim().length === 0) {
         throw new Error('El título de la columna es requerido');
       }
 
-      const nextPosition = currentColumns.length + 1;
-      const defaultColor = '#94a3b8'; 
-
-     
-      const dataToSend = {
-        titulo: columnsData.titulo,
-        board_id: boardId, 
-        color: columnsData.color || defaultColor, 
-        posicion: columnsData.posicion || nextPosition, 
-      };
-
-      return await apiClient.post(this.endpoint, dataToSend);
+      return await apiClient.post(this.endpoint, columnData);
     } catch (error) {
-      console.error(`Error creating columns for board ${boardId}: `, error);
+      console.error('Error creating column:', error);
       throw error;
     }
   }
 
-  async updateColumns(id, columnData) {
+  async updateColumn(id, columnData) {
     try {
       if (columnData.titulo && columnData.titulo.trim().length === 0) {
         throw new Error('El titulo no puede estar vacío');
@@ -78,5 +69,5 @@ export class ColumnService {
   }
 }
 
-export const columnService = new ColumnService();
-export default columnService;
+export const columnsService = new ColumnService();
+export default columnsService;
