@@ -11,20 +11,39 @@ import {
   InformationCircleIcon,
   PlusIcon,
   EllipsisVerticalIcon,
+  PencilIcon,
+  TrashIcon,
 } from '@heroicons/react/24/outline';
 import {
   CheckCircleIcon as CheckCircleSolid,
 } from '@heroicons/react/24/solid';
+import { useColumns } from '../../hooks/useColumns';
 
-export const BoardDetails = ({ 
-  board, 
-  isOpen, 
-  onClose, 
-  onEditBoard, 
+export const BoardDetails = ({
+  board,
+  isOpen,
+  onClose,
+  onEditBoard,
   onDeleteBoard,
-  loading = false 
+  loading = false,
+  onDataChange //Modificacion Isma
 }) => {
   const [selectedTab, setSelectedTab] = useState('overview');
+
+  const { columns, addColumn, removeColumn, editColumn } = useColumns(board?.id, board?.columns);
+
+  //Modficacion Isma
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newColumnData, setNewColumnData] = useState({
+    titulo: "",
+    color: "#94a3b8",
+    posicion: "",
+  });
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
+
 
   // Reset tab when board changes
   useEffect(() => {
@@ -35,13 +54,15 @@ export const BoardDetails = ({
 
   // Calculate statistics
   const totalTasks = board.columns?.reduce((acc, col) => acc + (col.tasks?.length || 0), 0) || 0;
-  const completedTasks = board.columns?.reduce((acc, col) => 
+  const completedTasks = board.columns?.reduce((acc, col) =>
     acc + (col.tasks?.filter(task => task.avance === 100).length || 0), 0) || 0;
-  const inProgressTasks = board.columns?.reduce((acc, col) => 
+  const inProgressTasks = board.columns?.reduce((acc, col) =>
     acc + (col.tasks?.filter(task => task.avance > 0 && task.avance < 100).length || 0), 0) || 0;
   const pendingTasks = totalTasks - completedTasks - inProgressTasks;
 
   const progressPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+
 
   // Priority distribution
   const priorityStats = board.columns?.reduce((acc, col) => {
@@ -78,6 +99,51 @@ export const BoardDetails = ({
     { id: 'tasks', label: 'Tareas', icon: CheckCircleIcon },
     { id: 'activity', label: 'Actividad', icon: ClockIcon },
   ];
+
+  //Modificacion Isma
+  const handleCreateColumn = async (e) => {
+    e.preventDefault();
+
+    try {
+      await addColumn({
+        titulo: newColumnData.titulo || "Nueva Columna",
+        color: newColumnData.color,
+        posicion: newColumnData.posicion
+          ? parseInt(newColumnData.posicion, 10)
+          : undefined,
+      });
+
+      setNewColumnData({ titulo: "", color: "#94a3b8", posicion: "" });
+      closeModal();
+      onDataChange?.();
+    } catch (error) {
+      alert(`Error: ${error.message}`);
+    }
+  };
+
+
+  const handleDeleteColumn = async (columnId) => {
+    if (window.confirm("¿Estás seguro de que quieres eliminar esta columna?")) {
+      try {
+        await removeColumn(columnId);
+        onDataChange?.();
+      } catch (error) {
+        alert(`Error: ${error.message}`);
+      }
+    }
+  };
+
+  const handleEditColumn = async (column) => {
+    const newTitle = prompt("Nuevo nombre para la columna:", column.titulo); // en tu ERD el campo es 'titulo'
+    if (newTitle && newTitle.trim() !== column.titulo) {
+      try {
+        await editColumn(column.id, { titulo: newTitle });
+        onDataChange?.();
+      } catch (error) {
+        alert(`Error: ${error.message}`);
+      }
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -127,11 +193,10 @@ export const BoardDetails = ({
                     <button
                       key={tab.id}
                       onClick={() => setSelectedTab(tab.id)}
-                      className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                        selectedTab === tab.id
-                          ? 'border-blue-500 text-blue-600'
-                          : 'border-transparent text-gray-500 hover:text-gray-700'
-                      }`}
+                      className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors ${selectedTab === tab.id
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                        }`}
                     >
                       <Icon className="h-5 w-5 mr-2" />
                       {tab.label}
@@ -179,34 +244,121 @@ export const BoardDetails = ({
                       </div>
                     </div>
                   </div>
-
+                  {/*Parte de isma */}
                   {/* Columns Overview */}
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Columnas</h3>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-semibold text-gray-900">Columnas</h3>
+
+                      <button
+                        onClick={openModal}
+                        className="bg-blue-500 text-white px-3 py-1 rounded-lg text-sm font-medium hover:bg-blue-600 flex items-center"
+                      >
+                        <PlusIcon className="h-4 w-4 mr-1" />
+                        Añadir Columna
+                      </button>
+                    </div>
+
                     <div className="grid gap-4">
-                      {board.columns?.map((column, index) => (
-                        <div key={column.id || index} className="bg-white border rounded-lg p-4">
+                      {columns?.filter(Boolean).map((column) => (
+                        <div key={column.id || Math.random()} className="bg-white border rounded-lg p-4 group">
                           <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-medium text-gray-900">{column.nombre}</h4>
-                            <span className="text-sm text-gray-500">
-                              {column.tasks?.length || 0} tareas
-                            </span>
+                            {/* Protegemos column.titulo */}
+                            <h4 className="font-medium text-gray-900">{column?.titulo || 'Sin título'}</h4>
+                            <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                onClick={() => handleEditColumn(column)}
+                                title="Editar"
+                                className="p-1 text-gray-500 hover:text-blue-600"
+                              >
+                                <PencilIcon className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteColumn(column.id)}
+                                title="Eliminar"
+                                className="p-1 text-gray-500 hover:text-red-600"
+                              >
+                                <TrashIcon className="h-4 w-4" />
+                              </button>
+                            </div>
                           </div>
-                          {column.descripcion && (
-                            <p className="text-sm text-gray-600 mb-3">{column.descripcion}</p>
-                          )}
-                          <div className="flex items-center space-x-4 text-xs text-gray-500">
-                            <span>Orden: {column.orden}</span>
-                            {column.limite_tareas && (
-                              <span>Límite: {column.limite_tareas}</span>
-                            )}
-                          </div>
+                          <span className="text-sm text-gray-500">
+                            {column.tasks?.length || 0} tareas
+                          </span>
                         </div>
-                      )) || (
+                      ))}
+                      {(!columns || columns.length === 0) && (
                         <p className="text-gray-500 text-center py-4">No hay columnas definidas</p>
                       )}
                     </div>
+
+                    {/* Modal para nueva columna */}
+                    {isModalOpen && (
+                      <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+                          <h3 className="text-lg font-semibold mb-4">Nueva Columna</h3>
+
+                          <form onSubmit={handleCreateColumn} className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
+                              <input
+                                type="text"
+                                value={newColumnData.titulo}
+                                onChange={(e) =>
+                                  setNewColumnData({ ...newColumnData, titulo: e.target.value })
+                                }
+                                required
+                                className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-200"
+                                placeholder="Ej: Pendientes"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                              <input
+                                type="color"
+                                value={newColumnData.color}
+                                onChange={(e) =>
+                                  setNewColumnData({ ...newColumnData, color: e.target.value })
+                                }
+                                className="w-12 h-8 border rounded"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Posición</label>
+                              <input
+                                type="number"
+                                value={newColumnData.posicion}
+                                onChange={(e) =>
+                                  setNewColumnData({ ...newColumnData, posicion: e.target.value })
+                                }
+                                className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-200"
+                                placeholder="Opcional"
+                              />
+                            </div>
+
+                            <div className="flex justify-end space-x-2 mt-4">
+                              <button
+                                type="button"
+                                onClick={closeModal}
+                                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
+                              >
+                                Cancelar
+                              </button>
+                              <button
+                                type="submit"
+                                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                              >
+                                Guardar
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    )}
                   </div>
+
 
                   {/* Priority Distribution */}
                   <div>
@@ -264,14 +416,14 @@ export const BoardDetails = ({
                       Todas las Tareas ({totalTasks})
                     </h3>
                   </div>
-                  
+
                   {board.columns?.map((column) => (
                     <div key={column.id} className="mb-8">
                       <h4 className="font-medium text-gray-900 mb-4 flex items-center">
                         <span className="w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
                         {column.nombre} ({column.tasks?.length || 0})
                       </h4>
-                      
+
                       {column.tasks?.length > 0 ? (
                         <div className="space-y-3">
                           {column.tasks.map((task) => (
@@ -285,14 +437,12 @@ export const BoardDetails = ({
                                     </p>
                                   )}
                                   <div className="flex items-center space-x-4">
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                      getPriorityColor(task.prioridad)
-                                    }`}>
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(task.prioridad)
+                                      }`}>
                                       {task.prioridad || 'Media'}
                                     </span>
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                      getStatusColor(task.avance)
-                                    }`}>
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(task.avance)
+                                      }`}>
                                       {getStatusText(task.avance)} ({task.avance}%)
                                     </span>
                                     {task.fecha_vencimiento && (
@@ -315,8 +465,8 @@ export const BoardDetails = ({
                       )}
                     </div>
                   )) || (
-                    <p className="text-gray-500 text-center py-8">No hay tareas disponibles</p>
-                  )}
+                      <p className="text-gray-500 text-center py-8">No hay tareas disponibles</p>
+                    )}
                 </div>
               )}
 

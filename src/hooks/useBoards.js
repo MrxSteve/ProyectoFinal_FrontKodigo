@@ -128,21 +128,20 @@ export const useBoards = () => {
     }
   }, [updateState, fetchBoards]);
 
-  // Refresh specific board
   const refreshBoard = useCallback(async (id) => {
     try {
-      const updatedBoard = await boardService.getBoardById(id);
-      
-      updateState(prev => ({
-        boards: prev.boards.map(board => 
-          board.id === id ? updatedBoard : board
-        ),
-        selectedBoard: prev.selectedBoard?.id === id ? updatedBoard : prev.selectedBoard,
-      }));
+        const updatedBoard = await boardService.getBoardById(id); // <--- Esto debe traer las COLUMNAS
+        
+        updateState(prev => ({
+            boards: prev.boards.map(board => 
+                board.id === id ? updatedBoard : board
+            ),
+            selectedBoard: prev.selectedBoard?.id === id ? updatedBoard : prev.selectedBoard,
+        }));
     } catch (error) {
-      console.error('Error refreshing board:', error);
+        console.error('Error refreshing board:', error);
     }
-  }, [updateState]);
+}, [updateState]);;
 
   // Clear error
   const clearError = useCallback(() => {
